@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -14,49 +13,8 @@ import {
   UserCheck,
   Zap,
 } from "lucide-react";
-import { getStoredUser } from "@/lib/api";
 
 export default function Home() {
-  const [redirecting, setRedirecting] = useState(false);
-
-  /*
-   * FAST AUTH CHECK
-   *
-   * Do NOT call /api/auth/me here.
-   *
-   * The homepage should render immediately.
-   * Dashboard is responsible for validating the
-   * real HTTP-only authentication cookie.
-   */
-  useEffect(() => {
-    const storedUser = getStoredUser();
-
-    if (storedUser) {
-      setRedirecting(true);
-      window.location.replace("/dashboard");
-    }
-  }, []);
-
-  /*
-   * Only show this tiny loader when we already know
-   * the user is signed in locally.
-   */
-  if (redirecting) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20">
-            <Rocket size={24} />
-          </div>
-
-          <div className="h-1.5 w-32 overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full w-1/2 animate-pulse rounded-full bg-blue-600" />
-          </div>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-white text-slate-950">
 

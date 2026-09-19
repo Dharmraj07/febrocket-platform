@@ -26,6 +26,15 @@ export const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.log("[API auth] Request failed", {
+      method: error.config?.method?.toUpperCase() || null,
+      endpoint: error.config?.url || null,
+      status: error.response?.status || null,
+      code: error.code || null,
+      message: error.message,
+      hasResponse: Boolean(error.response),
+      hasRequest: Boolean(error.request),
+    });
     return Promise.reject(error);
   }
 );

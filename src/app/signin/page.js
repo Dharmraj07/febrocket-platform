@@ -15,6 +15,9 @@ export default function SignIn() {
     setError("");
     setGoogleLoading(true);
 
+    console.log("[Google auth] Starting sign-in redirect", {
+      endpoint: GOOGLE_AUTH_URL,
+    });
     window.location.assign(GOOGLE_AUTH_URL);
   };
 

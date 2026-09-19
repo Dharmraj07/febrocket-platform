@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -17,6 +17,7 @@ import {
 import {
   api,
   clearStoredUser,
+  isUserPayloadValid,
   setStoredUser,
 } from "@/lib/api";
 
@@ -25,22 +26,39 @@ export default function Dashboard() {
 
   const [user, setUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const authCheckStarted = useRef(false);
 
   useEffect(() => {
+    if (authCheckStarted.current) {
+      return;
+    }
+
+    authCheckStarted.current = true;
     let mounted = true;
 
     const loadUser = async () => {
+      console.log("[Dashboard auth] Checking HTTP-only session", {
+        endpoint: "/api/auth/me",
+        withCredentials: true,
+      });
+
       try {
         const response = await api.get("/api/auth/me", {
           withCredentials: true,
         });
 
         const payload = response.data || {};
-
         const authenticatedUser =
-          payload.user || null;
+          payload.user || payload.data?.user || payload;
+        const userPayloadValid = isUserPayloadValid(authenticatedUser);
 
-        if (!authenticatedUser) {
+        console.log("[Dashboard auth] /api/auth/me response received", {
+          status: response.status,
+          payloadKeys: Object.keys(payload),
+          userPayloadValid,
+        });
+
+        if (!userPayloadValid) {
           throw new Error("Authenticated user was not returned.");
         }
 
@@ -50,14 +68,22 @@ export default function Dashboard() {
 
         setUser(authenticatedUser);
         setStoredUser(authenticatedUser);
+        console.log("[Dashboard auth] Session accepted and user cached");
       } catch (error) {
-        console.error("Dashboard authentication failed:", error);
+        console.log("[Dashboard auth] Session check failed", {
+          status: error.response?.status || null,
+          code: error.code || null,
+          message: error.message,
+          hasResponse: Boolean(error.response),
+          hasRequest: Boolean(error.request),
+        });
 
         if (!mounted) {
           return;
         }
 
         clearStoredUser();
+        console.log("[Dashboard auth] Clearing cached user and redirecting to /signin");
         router.replace("/signin");
       } finally {
         if (mounted) {
@@ -74,6 +100,11 @@ export default function Dashboard() {
   }, [router]);
 
   const handleLogout = async () => {
+    console.log("[Dashboard auth] Starting logout", {
+      endpoint: "/api/auth/logout",
+      withCredentials: true,
+    });
+
     try {
       await api.post(
         "/api/auth/logout",
@@ -82,11 +113,17 @@ export default function Dashboard() {
           withCredentials: true,
         }
       );
+      console.log("[Dashboard auth] Logout request succeeded");
     } catch (error) {
-      console.warn("Logout request failed:", error);
+      console.log("[Dashboard auth] Logout request failed", {
+        status: error.response?.status || null,
+        code: error.code || null,
+        message: error.message,
+      });
     } finally {
       clearStoredUser();
       setUser(null);
+      console.log("[Dashboard auth] Cleared cached user and redirecting to /signin");
       router.replace("/signin");
     }
   };
