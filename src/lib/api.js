@@ -4,6 +4,10 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
   "https://febrocket-api-gateway-441625071558.asia-south1.run.app";
 
+  // const API_BASE_URL =
+  // process.env.NEXT_PUBLIC_API_BASE_URL ||
+  // "https://auth.febrocket.com";
+
 export const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 20000,

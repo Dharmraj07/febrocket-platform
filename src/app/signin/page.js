@@ -12,8 +12,10 @@ import {
 } from "lucide-react";
 import { api, safeAuthError, setStoredUser } from "@/lib/api";
 
+// const GOOGLE_AUTH_URL =
+//   "https://febrocket-auth-service.onrender.com/api/auth/google";
 const GOOGLE_AUTH_URL =
-  "https://febrocket-auth-service.onrender.com/api/auth/google";
+  "https://auth.febrocket.com/api/auth/google";
 
 export default function SignIn() {
   const router = useRouter();
