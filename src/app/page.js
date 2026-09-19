@@ -1,15 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   ArrowRight,
-  ArrowUpRight,
   Check,
-  ChevronRight,
   FileText,
-  Globe,
-  Lock,
   Menu,
   Play,
   Rocket,
@@ -19,60 +14,34 @@ import {
   UserCheck,
   Zap,
 } from "lucide-react";
-import { api, getStoredUser, setStoredUser } from "@/lib/api";
+import { getStoredUser } from "@/lib/api";
 
 export default function Home() {
-  const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
+  const [redirecting, setRedirecting] = useState(false);
 
+  /*
+   * FAST AUTH CHECK
+   *
+   * Do NOT call /api/auth/me here.
+   *
+   * The homepage should render immediately.
+   * Dashboard is responsible for validating the
+   * real HTTP-only authentication cookie.
+   */
   useEffect(() => {
-    const checkAuthentication = async () => {
-      try {
-        const storedUser = getStoredUser();
+    const storedUser = getStoredUser();
 
-        if (storedUser) {
-          try {
-            const response = await api.get("/api/auth/me");
-            const payload = response.data || {};
+    if (storedUser) {
+      setRedirecting(true);
+      window.location.replace("/dashboard");
+    }
+  }, []);
 
-            if (payload.success && payload.user) {
-              setStoredUser(payload.user);
-              router.replace("/dashboard");
-              return;
-            }
-
-            if (payload.user) {
-              setStoredUser(payload.user);
-              router.replace("/dashboard");
-              return;
-            }
-          } catch (error) {
-            console.warn("Session check failed; keeping the local signed-in user.", error);
-            router.replace("/dashboard");
-            return;
-          }
-        }
-
-        const response = await api.get("/api/auth/me");
-        const data = response.data || {};
-
-        if (data.success && data.user) {
-          setStoredUser(data.user);
-          router.replace("/dashboard");
-          return;
-        }
-      } catch (error) {
-        console.log("User is not authenticated.");
-      } finally {
-        setCheckingAuth(false);
-      }
-    };
-
-    checkAuthentication();
-  }, [router]);
-
-  // Prevent landing page flashing while authentication is checked
-  if (checkingAuth) {
+  /*
+   * Only show this tiny loader when we already know
+   * the user is signed in locally.
+   */
+  if (redirecting) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-4">
@@ -91,13 +60,10 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white text-slate-950">
 
-      {/* =========================
-          NAVBAR
-      ========================== */}
+      {/* NAVBAR */}
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/90 backdrop-blur">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
 
-          {/* Logo */}
           <a href="/" className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/20">
               <Rocket size={20} />
@@ -108,7 +74,6 @@ export default function Home() {
             </span>
           </a>
 
-          {/* Desktop Navigation */}
           <nav className="hidden items-center gap-8 md:flex">
             <a
               href="#how-it-works"
@@ -139,7 +104,6 @@ export default function Home() {
             </a>
           </nav>
 
-          {/* Actions */}
           <div className="hidden items-center gap-3 md:flex">
             <a
               href="/signin"
@@ -156,26 +120,23 @@ export default function Home() {
             </a>
           </div>
 
-          {/* Mobile */}
           <button
             className="rounded-lg p-2 md:hidden"
             aria-label="Open menu"
           >
             <Menu size={24} />
           </button>
+
         </div>
       </header>
 
-      {/* =========================
-          HERO
-      ========================== */}
+      {/* HERO */}
       <section className="relative overflow-hidden">
 
         <div className="absolute left-1/2 top-0 -z-10 h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-blue-50/70 blur-3xl" />
 
         <div className="mx-auto grid max-w-7xl items-center gap-14 px-6 py-20 lg:grid-cols-2 lg:px-8 lg:py-28">
 
-          {/* Hero Content */}
           <div>
 
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600">
@@ -198,14 +159,12 @@ export default function Home() {
               repetitive work, review the form, and submit.
             </p>
 
-            {/* CTA */}
             <div className="mt-9 flex flex-col gap-4 sm:flex-row">
               <a
                 href="/signup"
                 className="group inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-7 py-4 font-semibold text-white shadow-xl shadow-blue-500/20 transition hover:-translate-y-1"
               >
                 Get Started
-
                 <ArrowRight
                   size={18}
                   className="transition group-hover:translate-x-1"
@@ -221,12 +180,12 @@ export default function Home() {
               </a>
             </div>
 
-            {/* Trust points */}
             <div className="mt-8 flex flex-wrap gap-x-7 gap-y-3">
               <TrustPoint text="AI-powered" />
               <TrustPoint text="Review before submit" />
               <TrustPoint text="Secure & private" />
             </div>
+
           </div>
 
           {/* Product Preview */}
@@ -236,7 +195,6 @@ export default function Home() {
 
             <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-2xl shadow-blue-900/10">
 
-              {/* Browser Header */}
               <div className="flex items-center gap-2 border-b border-slate-100 px-5 py-4">
                 <div className="h-3 w-3 rounded-full bg-slate-200" />
                 <div className="h-3 w-3 rounded-full bg-slate-200" />
@@ -249,7 +207,6 @@ export default function Home() {
 
               <div className="p-6 sm:p-8">
 
-                {/* AI Header */}
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-slate-400">
@@ -266,7 +223,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Progress */}
                 <div className="mt-7">
                   <div className="flex justify-between text-xs">
                     <span className="font-semibold text-slate-700">
@@ -283,9 +239,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Form fields */}
                 <div className="mt-7 space-y-4">
-
                   <PreviewField
                     label="Full Name"
                     value="Dharmraj Hembram"
@@ -311,7 +265,6 @@ export default function Home() {
                   />
                 </div>
 
-                {/* AI Status */}
                 <div className="mt-7 rounded-2xl border border-blue-100 bg-blue-50 p-4">
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-blue-600">
@@ -330,24 +283,23 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Review */}
                 <button className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-3.5 text-sm font-semibold text-white">
                   Review Form
                   <ArrowRight size={16} />
                 </button>
+
               </div>
             </div>
 
             <div className="absolute -bottom-6 right-4 rounded-full border border-blue-100 bg-white px-5 py-3 text-sm font-semibold text-blue-600 shadow-lg">
               Upload. Fill. Review. Submit.
             </div>
+
           </div>
         </div>
       </section>
 
-      {/* =========================
-          HOW IT WORKS
-      ========================== */}
+      {/* HOW IT WORKS */}
       <section
         id="how-it-works"
         className="border-y border-slate-100 bg-white py-24"
@@ -389,13 +341,12 @@ export default function Home() {
               title="Review"
               description="Check the completed form yourself before submitting it."
             />
+
           </div>
         </div>
       </section>
 
-      {/* =========================
-          FEATURES
-      ========================== */}
+      {/* FEATURES */}
       <section
         id="features"
         className="bg-gradient-to-b from-slate-50 to-white py-24"
@@ -433,19 +384,19 @@ export default function Home() {
               title="Human Review"
               description="AI does the repetitive work, but you review the form before submission."
             />
+
           </div>
         </div>
       </section>
 
-      {/* =========================
-          PROBLEM
-      ========================== */}
+      {/* ABOUT */}
       <section id="about" className="py-24">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
 
           <div className="grid items-center gap-14 lg:grid-cols-2">
 
             <div>
+
               <span className="text-sm font-bold uppercase tracking-wider text-blue-600">
                 WHY FEBROCKET?
               </span>
@@ -472,9 +423,9 @@ export default function Home() {
                 <Bullet text="Fill forms with the browser extension." />
                 <Bullet text="Review everything before submission." />
               </div>
+
             </div>
 
-            {/* Problem card */}
             <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-xl shadow-slate-900/5 sm:p-10">
 
               <p className="text-sm font-bold uppercase tracking-wider text-slate-400">
@@ -501,15 +452,13 @@ export default function Home() {
                 <SolutionItem text="AI helps fill the form" />
                 <SolutionItem text="You review and submit" />
               </div>
-            </div>
 
+            </div>
           </div>
         </div>
       </section>
 
-      {/* =========================
-          LAUNCH CTA
-      ========================== */}
+      {/* CTA */}
       <section className="px-6 pb-24 lg:px-8">
         <div className="mx-auto max-w-6xl overflow-hidden rounded-3xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 px-8 py-16 text-center text-white shadow-2xl shadow-blue-500/20 sm:px-16">
 
@@ -542,19 +491,17 @@ export default function Home() {
             <p className="mt-5 text-sm font-semibold text-blue-100">
               Upload once. Fill faster. Review. Submit.
             </p>
+
           </div>
         </div>
       </section>
 
-      {/* =========================
-          FOOTER
-      ========================== */}
+      {/* FOOTER */}
       <footer id="contact" className="border-t border-slate-100 bg-white">
         <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
 
           <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
 
-            {/* Brand */}
             <div>
               <a href="/" className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
@@ -571,7 +518,6 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Product */}
             <div>
               <h3 className="font-semibold">
                 Product
@@ -601,7 +547,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Company */}
             <div>
               <h3 className="font-semibold">
                 Company
@@ -624,7 +569,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Legal */}
             <div>
               <h3 className="font-semibold">
                 Legal
@@ -653,6 +597,7 @@ export default function Home() {
                 </a>
               </div>
             </div>
+
           </div>
 
           <div className="mt-12 flex flex-col gap-4 border-t border-slate-100 pt-7 text-sm text-slate-400 sm:flex-row sm:items-center sm:justify-between">
@@ -664,11 +609,14 @@ export default function Home() {
               AI-powered form filling
             </p>
           </div>
+
         </div>
       </footer>
+
     </main>
   );
 }
+
 
 /* =========================
    COMPONENTS
