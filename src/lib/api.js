@@ -3,7 +3,7 @@ import axios from "axios";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  "https://auth.febrocket.com";
+  "https://auth-service-441625071558.asia-south1.run.app";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
