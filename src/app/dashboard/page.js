@@ -124,7 +124,7 @@ export default function Dashboard() {
       clearStoredUser();
       setUser(null);
       console.log("[Dashboard auth] Cleared cached user and redirecting to /signin");
-      router.replace("/signin");
+      router.replace("/privacy");
     }
   };
 
