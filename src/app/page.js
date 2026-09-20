@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const GOOGLE_AUTH_URL =
-  "https://auth-service-441625071558.asia-south1.run.app/api/auth/google";
+  "https://auth-service.febrocket.com/api/auth/google";
 
 export default function Home() {
   const handleGoogleLogin = () => {
