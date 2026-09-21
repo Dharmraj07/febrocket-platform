@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowRight,
   Check,
@@ -12,11 +14,51 @@ import {
   UserCheck,
   Zap,
 } from "lucide-react";
+import { api, isUserPayloadValid, setStoredUser } from "@/lib/api";
 
 const GOOGLE_AUTH_URL =
   "https://auth.febrocket.com/api/auth/google";
 
 export default function Home() {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkSession = async () => {
+      try {
+        const response = await api.get("/api/auth/me", {
+          withCredentials: true,
+        });
+        const payload = response.data || {};
+        const authenticatedUser =
+          payload.user || payload.data?.user || payload;
+
+        if (!isUserPayloadValid(authenticatedUser)) {
+          throw new Error("Authenticated user was not returned.");
+        }
+
+        if (mounted) {
+          setUser(authenticatedUser);
+          setStoredUser(authenticatedUser);
+          router.replace("/dashboard");
+        }
+      } catch {
+        if (mounted) {
+          setAuthChecked(true);
+        }
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      mounted = false;
+    };
+  }, [router]);
+
   const handleGoogleLogin = () => {
     window.location.assign(GOOGLE_AUTH_URL);
   };
@@ -96,12 +138,13 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handleGoogleLogin}
+                disabled={!authChecked}
                 className="group inline-flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-7 py-4 font-semibold text-slate-700 shadow-lg shadow-slate-900/5 transition hover:-translate-y-1 hover:border-blue-200 hover:bg-slate-50 hover:shadow-xl sm:w-auto"
               >
 
                 <GoogleIcon />
 
-                Continue with Google
+                {authChecked ? "Sign In" : "Checking session..."}
 
                 <ArrowRight
                   size={17}
@@ -403,12 +446,13 @@ export default function Home() {
             <button
               type="button"
               onClick={handleGoogleLogin}
+              disabled={!authChecked}
               className="mt-8 inline-flex items-center justify-center gap-3 rounded-xl bg-white px-7 py-4 font-bold text-blue-600 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl"
             >
 
               <GoogleIcon />
 
-              Continue with Google
+              {authChecked ? "Sign In" : "Checking session..."}
 
               <ArrowRight size={17} />
 
