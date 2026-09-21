@@ -144,7 +144,7 @@ export default function Home() {
 
                 <GoogleIcon />
 
-                {authChecked ? "Sign In" : "Checking session..."}
+                {authChecked ? "Continue with Google" : "Checking session..."}
 
                 <ArrowRight
                   size={17}
