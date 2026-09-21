@@ -17,7 +17,7 @@ import {
 import { api, isUserPayloadValid, setStoredUser } from "@/lib/api";
 
 const GOOGLE_AUTH_URL =
-  "https://febrocket-api-gateway-z5vzrqd6mq-as.a.run.app/api/auth/google";
+  "https://backend.febrocket.com/api/auth/google";
 
 export default function Home() {
   const router = useRouter();
