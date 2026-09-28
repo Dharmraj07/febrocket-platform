@@ -59,7 +59,7 @@ export default function Contact() {
 
             <p className="mx-auto mt-5 max-w-xl text-lg leading-8 text-slate-500">
               Have a question, feedback, or need help with FebRocket?
-              We're here to help.
+              We&apos;re here to help.
             </p>
 
           </div>
@@ -114,7 +114,7 @@ export default function Contact() {
 
           {/* Footer Message */}
           <p className="mt-10 text-center text-sm text-slate-400">
-            We’ll get back to you as soon as possible.
+            We&apos;ll get back to you as soon as possible.
           </p>
 
         </div>

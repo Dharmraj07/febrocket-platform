@@ -103,7 +103,7 @@ export default function PrivacyPolicy() {
                 When you use a third-party login provider, we may receive
                 information that the provider makes available to us, such as
                 your name, email address, profile picture, and provider
-                identifier, depending on your permissions and the provider's
+                identifier, depending on your permissions and the provider&apos;s
                 policies.
               </p>
 
@@ -221,7 +221,7 @@ export default function PrivacyPolicy() {
 
             <section>
               <h2 className="mb-3 text-2xl font-bold text-slate-900">
-                10. Children's Privacy
+                10. Children&apos;s Privacy
               </h2>
 
               <p>

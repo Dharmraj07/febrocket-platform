@@ -1,9 +1,10 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import {
   CheckCircle,
   LogOut,
@@ -15,120 +16,44 @@ import {
   Zap,
 } from "lucide-react";
 import {
-  api,
-  clearStoredUser,
-  isUserPayloadValid,
-  setStoredUser,
-} from "@/lib/api";
+  checkAuthSession,
+  logoutUser,
+  selectAuth,
+} from "@/features/auth/authSlice";
 
 export default function Dashboard() {
   const router = useRouter();
-
-  const [user, setUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-  const authCheckStarted = useRef(false);
+  const dispatch = useDispatch();
+  const { user, isLoading } = useSelector(selectAuth);
 
   useEffect(() => {
-    if (authCheckStarted.current) {
-      return;
-    }
-
-    authCheckStarted.current = true;
-    let mounted = true;
+    let active = true;
 
     const loadUser = async () => {
-      console.log("[Dashboard auth] Checking HTTP-only session", {
-        endpoint: "/api/auth/me",
-        withCredentials: true,
-      });
+      const result = await dispatch(checkAuthSession());
 
-      try {
-        const response = await api.get("/api/auth/me", {
-          withCredentials: true,
-        });
+      if (!active) {
+        return;
+      }
 
-        const payload = response.data || {};
-        const authenticatedUser =
-          payload.user || payload.data?.user || payload;
-        const userPayloadValid = isUserPayloadValid(authenticatedUser);
-
-        console.log("[Dashboard auth] /api/auth/me response received", {
-          status: response.status,
-          payloadKeys: Object.keys(payload),
-          userPayloadValid,
-        });
-
-        if (!userPayloadValid) {
-          throw new Error("Authenticated user was not returned.");
-        }
-
-        if (!mounted) {
-          return;
-        }
-
-        setUser(authenticatedUser);
-        setStoredUser(authenticatedUser);
-        console.log("[Dashboard auth] Session accepted and user cached");
-      } catch (error) {
-        console.log("[Dashboard auth] Session check failed", {
-          status: error.response?.status || null,
-          code: error.code || null,
-          message: error.message,
-          hasResponse: Boolean(error.response),
-          hasRequest: Boolean(error.request),
-        });
-
-        if (!mounted) {
-          return;
-        }
-
-        clearStoredUser();
-        console.log("[Dashboard auth] Clearing cached user and redirecting to /signin");
-        router.replace("/signin");
-      } finally {
-        if (mounted) {
-          setAuthLoading(false);
-        }
+      if (result?.type?.endsWith("/rejected")) {
+        router.replace("/");
       }
     };
 
     loadUser();
 
     return () => {
-      mounted = false;
+      active = false;
     };
-  }, [router]);
+  }, [dispatch, router]);
 
   const handleLogout = async () => {
-    console.log("[Dashboard auth] Starting logout", {
-      endpoint: "/api/auth/logout",
-      withCredentials: true,
-    });
-
-    try {
-      await api.post(
-        "/api/auth/logout",
-        {},
-        {
-          withCredentials: true,
-        }
-      );
-      console.log("[Dashboard auth] Logout request succeeded");
-    } catch (error) {
-      console.log("[Dashboard auth] Logout request failed", {
-        status: error.response?.status || null,
-        code: error.code || null,
-        message: error.message,
-      });
-    } finally {
-      clearStoredUser();
-      setUser(null);
-      console.log("[Dashboard auth] Cleared cached user and redirecting to /signin");
-      router.replace("/privacy");
-    }
+    await dispatch(logoutUser());
+    router.replace("/");
   };
 
-  if (authLoading) {
+  if (isLoading && !user) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="text-center">
@@ -212,7 +137,7 @@ export default function Dashboard() {
             </p>
 
             <p className="mt-0.5 text-sm text-blue-600">
-              We're building an AI agent that helps you fill forms faster.
+              We&apos;re building an AI agent that helps you fill forms faster.
             </p>
           </div>
         </div>
@@ -326,7 +251,7 @@ export default function Dashboard() {
 
                   <p className="mt-1 text-sm leading-6 text-slate-500">
                     FebRocket extracts the information you need,
-                    so you don't have to type it repeatedly.
+                    so you don&apos;t have to type it repeatedly.
                   </p>
                 </div>
               </div>
@@ -405,7 +330,7 @@ export default function Dashboard() {
               ["Less typing", "Reuse information from your documents."],
               ["Less document hassle", "Reduce repetitive file preparation."],
               ["AI-powered", "Let AI handle repetitive form work."],
-              ["You're in control", "Review before submitting."],
+              ["You&apos;re in control", "Review before submitting."],
             ].map(([title, description]) => (
               <div
                 key={title}
@@ -437,11 +362,11 @@ export default function Dashboard() {
           </div>
 
           <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-            We're launching soon 🚀
+            We&apos;re launching soon 🚀
           </h2>
 
           <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600">
-            We're working to make online form filling faster,
+            We&apos;re working to make online form filling faster,
             simpler, and less frustrating. Soon, you will be able
             to upload your documents, let AI do the repetitive work,
             review the result, and submit.

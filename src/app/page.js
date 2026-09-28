@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useDispatch, useSelector } from "react-redux";
 import {
   ArrowRight,
   Check,
@@ -14,50 +17,40 @@ import {
   UserCheck,
   Zap,
 } from "lucide-react";
-import { api, isUserPayloadValid, setStoredUser } from "@/lib/api";
+import {
+  checkAuthSession,
+  selectAuth,
+} from "@/features/auth/authSlice";
 
 const GOOGLE_AUTH_URL =
   "https://backend.febrocket.com/api/auth/google";
 
 export default function Home() {
   const router = useRouter();
-  const [user, setUser] = useState(null);
-  const [authChecked, setAuthChecked] = useState(false);
+  const dispatch = useDispatch();
+  const { authChecked, isLoading } = useSelector(selectAuth);
 
   useEffect(() => {
-    let mounted = true;
+    let active = true;
 
     const checkSession = async () => {
-      try {
-        const response = await api.get("/api/auth/me", {
-          withCredentials: true,
-        });
-        const payload = response.data || {};
-        const authenticatedUser =
-          payload.user || payload.data?.user || payload;
+      const result = await dispatch(checkAuthSession());
 
-        if (!isUserPayloadValid(authenticatedUser)) {
-          throw new Error("Authenticated user was not returned.");
-        }
+      if (!active) {
+        return;
+      }
 
-        if (mounted) {
-          setUser(authenticatedUser);
-          setStoredUser(authenticatedUser);
-          router.replace("/dashboard");
-        }
-      } catch {
-        if (mounted) {
-          setAuthChecked(true);
-        }
+      if (result?.type?.endsWith("/fulfilled")) {
+        router.replace("/dashboard");
       }
     };
 
     checkSession();
 
     return () => {
-      mounted = false;
+      active = false;
     };
-  }, [router]);
+  }, [dispatch, router]);
 
   const handleGoogleLogin = () => {
     window.location.assign(GOOGLE_AUTH_URL);
@@ -72,21 +65,23 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex h-24 max-w-7xl items-center justify-between px-6 lg:px-8">
 
-          <a
+          <Link
             href="/"
             className="group flex items-center gap-4"
             aria-label="FebRocket Home"
           >
-            <img
+            <Image
               src="/febrocket-logo7.png"
               alt="FebRocket"
+              width={160}
+              height={64}
               className="h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03] sm:h-16"
             />
 
             <span className="hidden border-l border-slate-200 pl-4 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-400 sm:block">
               Future Forward
             </span>
-          </a>
+          </Link>
 
         </div>
       </header>
@@ -138,13 +133,13 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                disabled={!authChecked}
-                className="group inline-flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-7 py-4 font-semibold text-slate-700 shadow-lg shadow-slate-900/5 transition hover:-translate-y-1 hover:border-blue-200 hover:bg-slate-50 hover:shadow-xl sm:w-auto"
+                disabled={isLoading || !authChecked}
+                className="group inline-flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-7 py-4 font-semibold text-slate-700 shadow-lg shadow-slate-900/5 transition hover:-translate-y-1 hover:border-blue-200 hover:bg-slate-50 hover:shadow-xl sm:w-auto disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
               >
 
                 <GoogleIcon />
 
-                {authChecked ? "Continue with Google" : "Checking session..."}
+                {isLoading ? "Checking session..." : authChecked ? "Continue with Google" : "Checking session..."}
 
                 <ArrowRight
                   size={17}
@@ -184,9 +179,11 @@ export default function Home() {
 
             <div className="relative">
 
-              <img
+              <Image
                 src="/febrocket-ai-agent.png"
                 alt="FebRocket AI agent filling an online form"
+                width={1200}
+                height={900}
                 className="relative w-full rounded-3xl shadow-2xl shadow-blue-900/10"
               />
 
@@ -325,7 +322,7 @@ export default function Home() {
 
 
               <h2 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
-                Paperwork shouldn't take hours.
+                Paperwork shouldn&apos;t take hours.
               </h2>
 
 
@@ -435,7 +432,7 @@ export default function Home() {
 
 
             <p className="mt-5 text-lg leading-8 text-blue-100">
-              We're building FebRocket to make online form filling
+              We&apos;re building FebRocket to make online form filling
               faster and less frustrating. Upload your documents,
               let AI do the repetitive work, review the result,
               and submit.
@@ -446,13 +443,13 @@ export default function Home() {
             <button
               type="button"
               onClick={handleGoogleLogin}
-              disabled={!authChecked}
-              className="mt-8 inline-flex items-center justify-center gap-3 rounded-xl bg-white px-7 py-4 font-bold text-blue-600 shadow-xl transition hover:-translate-y-1 hover:shadow-2xl"
+              disabled={isLoading || !authChecked}
+              className="group inline-flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-7 py-4 font-semibold text-slate-700 shadow-lg shadow-slate-900/5 transition hover:-translate-y-1 hover:border-blue-200 hover:bg-slate-50 hover:shadow-xl sm:w-auto disabled:cursor-not-allowed disabled:opacity-70"
             >
 
               <GoogleIcon />
 
-              {authChecked ? "Sign In" : "Checking session..."}
+              {isLoading ? "Checking session..." : authChecked ? "Sign In" : "Checking session..."}
 
               <ArrowRight size={17} />
 
@@ -485,17 +482,19 @@ export default function Home() {
             {/* Brand */}
             <div>
 
-              <a
+              <Link
                 href="/"
                 className="group inline-flex items-center"
                 aria-label="FebRocket Home"
               >
-                <img
+                <Image
                   src="/febrocket-logo7.png"
                   alt="FebRocket"
+                  width={160}
+                  height={56}
                   className="h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-[1.03] sm:h-14"
                 />
-              </a>
+              </Link>
 
 
               <p className="mt-4 max-w-xs text-sm leading-6 text-slate-500">

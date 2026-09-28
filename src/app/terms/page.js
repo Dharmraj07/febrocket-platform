@@ -52,7 +52,7 @@ export default function TermsOfService() {
               </h2>
 
               <p>
-                These Terms of Service govern your use of FebRocket's website,
+                These Terms of Service govern your use of FebRocket&apos;s website,
                 applications, and services.
               </p>
 
@@ -141,7 +141,7 @@ export default function TermsOfService() {
 
               <p className="mt-4">
                 Your use of those services may also be subject to the
-                third-party provider's terms and policies.
+                third-party provider&apos;s terms and policies.
               </p>
             </section>
 
@@ -163,7 +163,7 @@ export default function TermsOfService() {
               </h2>
 
               <p>
-                FebRocket's software, branding, design, logos, and other
+                FebRocket&apos;s software, branding, design, logos, and other
                 original materials are owned by FebRocket or its licensors and
                 may be protected by applicable intellectual property laws.
               </p>
@@ -187,7 +187,7 @@ export default function TermsOfService() {
               </h2>
 
               <p>
-                FebRocket is provided on an "as available" basis. You are
+                FebRocket is provided on an &quot;as available&quot; basis. You are
                 responsible for reviewing information and documents before
                 submitting any official form or application.
               </p>
